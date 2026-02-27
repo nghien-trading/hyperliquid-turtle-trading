@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { AllMidsResponse, MetaAsset, MetaResponse, WsMessage } from "../lib/hyperliquid";
 import TurtleDonchianPanel from "./TurtleDonchianPanel";
+import TradingView from "./TradingView";
 
 const INFO_URL = "https://api.hyperliquid.xyz/info";
 const WS_URL = "wss://api.hyperliquid.xyz/ws";
@@ -331,18 +332,24 @@ export default function HyperliquidPrices() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans">
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
-        <header className="mb-8">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+        <header className="mb-6">
           <p className="mb-1 text-sm font-medium uppercase tracking-wider text-accent">
             Nghiện Trading
           </p>
           <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Hyperliquid Turtle Trading
           </h1>
-          <p className="text-sm text-muted">
+          <p className="mb-6 text-sm text-muted">
             Select assets to watch. Prices refresh at exact UTC boundaries (e.g. 0h00m00s, 0h05m00s).
           </p>
         </header>
+
+        <section className="mb-8 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+          <div className="h-[420px] w-full">
+            <TradingView />
+          </div>
+        </section>
 
         {loading && (
           <p className="text-sm text-muted">Loading universe and prices…</p>
