@@ -345,9 +345,72 @@ export default function HyperliquidPrices() {
           </p>
         </header>
 
+        {/* Poll interval: above chart and drives both price refresh and chart timeframe */}
+        <section className="mb-4 rounded-xl border border-border bg-surface p-4 shadow-sm">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium text-foreground">
+              Interval
+            </span>
+            <div className="flex gap-1.5">
+              {(["5m", "15m", "1h", "4h"] as const).map((interval) => (
+                <button
+                  key={interval}
+                  type="button"
+                  onClick={() => setPollInterval(interval)}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                    pollInterval === interval
+                      ? "bg-accent text-white shadow-sm"
+                      : "bg-background text-muted hover:bg-surface-hover hover:text-foreground border border-border"
+                  }`}
+                >
+                  {interval}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-muted">
+              Prices & chart timeframe
+            </span>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-border pt-3">
+            <span className="flex items-center gap-2 text-sm text-muted">
+              {wsConnected ? (
+                <>
+                  <span className="h-2 w-2 rounded-full bg-success" aria-hidden /> Live
+                </>
+              ) : (
+                <>
+                  <span className="h-2 w-2 rounded-full bg-warning animate-pulse" aria-hidden /> Reconnecting…
+                </>
+              )}
+            </span>
+            {lastUpdate != null && (
+              <span className="text-xs text-muted">
+                Updated {new Date(lastUpdate).toLocaleTimeString()}
+              </span>
+            )}
+            {nextRefreshAt != null && (
+              <span className="flex items-center gap-2 text-xs text-muted">
+                <NextRefreshProgressCircle
+                  nextRefreshAt={nextRefreshAt}
+                  intervalMs={POLL_INTERVAL_MS[pollInterval]}
+                  now={clock || nextRefreshAt - POLL_INTERVAL_MS[pollInterval]}
+                />
+                Next refresh at {formatUtcTime(nextRefreshAt)}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleRefresh}
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
+            >
+              Refresh now
+            </button>
+          </div>
+        </section>
+
         <section className="mb-8 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
           <div className="h-[420px] w-full">
-            <TradingView />
+            <TradingView interval={pollInterval} />
           </div>
         </section>
 
@@ -400,64 +463,6 @@ export default function HyperliquidPrices() {
                     ))}
                   </ul>
                 )}
-              </div>
-            </section>
-
-            <section className="mb-6 rounded-xl border border-border bg-surface p-4 shadow-sm">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm font-medium text-foreground">
-                  Poll interval
-                </span>
-                <div className="flex gap-1.5">
-                  {(["5m", "15m", "1h", "4h"] as const).map((interval) => (
-                    <button
-                      key={interval}
-                      type="button"
-                      onClick={() => setPollInterval(interval)}
-                      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${pollInterval === interval
-                          ? "bg-accent text-white shadow-sm"
-                          : "bg-background text-muted hover:bg-surface-hover hover:text-foreground border border-border"
-                        }`}
-                    >
-                      {interval}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-border pt-3">
-                <span className="flex items-center gap-2 text-sm text-muted">
-                  {wsConnected ? (
-                    <>
-                      <span className="h-2 w-2 rounded-full bg-success" aria-hidden /> Live
-                    </>
-                  ) : (
-                    <>
-                      <span className="h-2 w-2 rounded-full bg-warning animate-pulse" aria-hidden /> Reconnecting…
-                    </>
-                  )}
-                </span>
-                {lastUpdate != null && (
-                  <span className="text-xs text-muted">
-                    Updated {new Date(lastUpdate).toLocaleTimeString()}
-                  </span>
-                )}
-                {nextRefreshAt != null && (
-                  <span className="flex items-center gap-2 text-xs text-muted">
-                    <NextRefreshProgressCircle
-                      nextRefreshAt={nextRefreshAt}
-                      intervalMs={POLL_INTERVAL_MS[pollInterval]}
-                      now={clock || nextRefreshAt - POLL_INTERVAL_MS[pollInterval]}
-                    />
-                    Next refresh at {formatUtcTime(nextRefreshAt)}
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={handleRefresh}
-                  className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
-                >
-                  Refresh now
-                </button>
               </div>
             </section>
 

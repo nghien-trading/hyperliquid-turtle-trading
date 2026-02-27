@@ -1,6 +1,19 @@
 "use client";
 import { memo, useEffect, useRef } from "react";
 
+export type ChartInterval = "5m" | "15m" | "1h" | "4h";
+
+/** Map poll-style interval to TradingView resolution string (minutes). */
+const INTERVAL_TO_TV: Record<ChartInterval, string> = {
+  "5m": "5",
+  "15m": "15",
+  "1h": "60",
+  "4h": "240",
+};
+
+/** Default/favorite chart intervals — match our poll intervals (5m, 15m, 1h, 4h). */
+const SUPPORTED_RESOLUTIONS = ["5", "15", "60", "240"];
+
 /**
  * Watchlist of symbols aligned with Hyperliquid perpetuals.
  * TradingView's free widget data does not include Hyperliquid exchange
@@ -27,10 +40,20 @@ const HYPERLIQUID_STYLE_WATCHLIST = [
 
 const DEFAULT_SYMBOL = HYPERLIQUID_STYLE_WATCHLIST[0];
 
-function TradingViewWidget() {
+interface TradingViewWidgetProps {
+  /** Chart timeframe; should match poll interval (5m, 15m, 1h, 4h). */
+  interval?: ChartInterval;
+}
+
+function TradingViewWidget({ interval = "5m" }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const parent = container.current;
+    if (!parent) return;
+    parent.querySelectorAll("script").forEach((s) => s.remove());
+    parent.querySelectorAll("iframe").forEach((f) => f.remove());
+
     const script = document.createElement("script");
     script.src =
       "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
@@ -45,7 +68,7 @@ function TradingViewWidget() {
       hide_legend: false,
       hide_volume: false,
       hotlist: false,
-      interval: "D",
+      interval: INTERVAL_TO_TV[interval],
       locale: "en",
       save_image: true,
       style: "1",
@@ -60,9 +83,11 @@ function TradingViewWidget() {
       studies: ["STD;Donchian_Channels"],
       autosize: true,
       support_host: "https://www.tradingview.com",
+      // Limit chart interval dropdown to our poll intervals (5m, 15m, 1h, 4h)
+      supported_resolutions: SUPPORTED_RESOLUTIONS,
     });
-    container.current?.appendChild(script);
-  }, []);
+    parent.appendChild(script);
+  }, [interval]);
 
   return (
     <div
